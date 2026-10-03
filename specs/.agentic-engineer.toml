@@ -1,0 +1,4 @@
+apiVersion = "agentic-engineer/v1"
+name = "team-leave-small"
+createdAt = "2026-10-03T06:06:15Z"
+idea = "Team Leave: a small web app where employees request leave (dates, type, reason) and see their balance and request history; managers see their team's pending requests and approve or reject them with a comment. Two roles: employee and manager. Keep it small: one web application and one backend service."
