@@ -19,3 +19,4 @@ current leave balance and the history of their past requests.
 - A leave balance is deducted only when a request is approved; a pending or rejected request leaves it unchanged.
 - An employee can cancel a request only while it is still pending; once a manager has decided, the employee can no longer cancel it.
 - A manager sets and adjusts their team members' balances directly (see [Product-wide](../product-wide.md)); there is no separate Admin/HR role.
+
