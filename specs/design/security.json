@@ -1,0 +1,54 @@
+{
+  "version": 3,
+  "permissions": [
+    {
+      "resource": "leave-requests",
+      "component": "team-leave-api",
+      "description": "Employee leave requests and their approval",
+      "actions": [
+        { "handle": "read", "description": "The caller's own leave requests" },
+        { "handle": "submit", "description": "Create a new leave request" },
+        { "handle": "cancel", "description": "Cancel the caller's own pending request" },
+        { "handle": "review-team", "description": "View the caller's team's leave requests" },
+        { "handle": "approve", "description": "Approve a pending request from the caller's team" },
+        { "handle": "reject", "description": "Reject a pending request from the caller's team" }
+      ]
+    },
+    {
+      "resource": "leave-balances",
+      "component": "team-leave-api",
+      "description": "Per-employee, per-type leave balances",
+      "actions": [
+        { "handle": "read", "description": "The caller's own leave balances" },
+        { "handle": "review-team", "description": "View the caller's team's leave balances" },
+        { "handle": "adjust", "description": "Set or adjust a team member's leave balance" }
+      ]
+    }
+  ],
+  "groups": [
+    { "name": "Employees", "description": "Everyone who can submit leave requests" },
+    { "name": "Managers", "description": "Everyone who approves their team's leave requests" }
+  ],
+  "roles": [
+    {
+      "name": "Employee",
+      "description": "Submits leave requests and tracks their own balance and history.",
+      "stories": ["F1.1", "F1.2", "F1.3", "F1.4"],
+      "grants": ["leave-requests:read", "leave-requests:submit", "leave-requests:cancel", "leave-balances:read"],
+      "assignTo": ["Employees"]
+    },
+    {
+      "name": "Manager",
+      "description": "Reviews and decides their team's leave requests, and manages their team's balances.",
+      "stories": ["F1.5", "F2.1", "F2.2", "F2.3", "F2.4"],
+      "grants": ["leave-requests:review-team", "leave-requests:approve", "leave-requests:reject", "leave-balances:review-team", "leave-balances:adjust"],
+      "assignTo": ["Managers"]
+    }
+  ],
+  "testUsers": [
+    { "username": "test-employee", "roles": ["Employee"] },
+    { "username": "test-employee-2", "roles": ["Employee"] },
+    { "username": "test-manager", "roles": ["Manager"] },
+    { "username": "test-manager-2", "roles": ["Manager"] }
+  ]
+}

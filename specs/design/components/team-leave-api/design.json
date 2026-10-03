@@ -1,0 +1,17 @@
+{
+  "name": "team-leave-api",
+  "type": "service",
+  "version": "0.1.0",
+  "language": "Ballerina",
+  "buildpack": "docker",
+  "appPath": "team-leave-api",
+  "entrypoint": "deployment/service",
+  "exposure": "internet",
+  "dependencies": [
+    { "kind": "platform-resource", "name": "leave-db", "resourceType": "postgres-cnpg" },
+    { "kind": "platform-resource", "name": "user-auth", "resourceType": "thunder-app" }
+  ],
+  "description": "Owns employees, leave requests and leave balances. Exposes /me endpoints for an employee's own requests and balance, and /me/team endpoints for a manager's team view, approval and balance adjustment. Does not send notifications and holds no UI.",
+  "stories": ["F1.1", "F1.2", "F1.3", "F1.4", "F1.5", "F2.1", "F2.2", "F2.3", "F2.4"],
+  "skillsPinned": ["openapi-conventions", "ballerina", "thunder-authentication", "api-management"]
+}

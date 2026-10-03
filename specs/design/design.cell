@@ -1,0 +1,14 @@
+title Team Leave
+
+component team-leave-webapp as "Team Leave" web-application
+component team-leave-api as "Team Leave API" service
+component leave-db as "Leave Database" database
+
+east user-auth as "Thunder Auth" identity-server
+
+north -> team-leave-webapp
+
+team-leave-webapp -> team-leave-api
+team-leave-webapp -> user-auth
+team-leave-api -> user-auth
+team-leave-api -> leave-db
