@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   Detail,
+  Dialog,
   EmptyState,
   Field,
   Form,
@@ -89,11 +90,29 @@ function MyLeave() {
   const state = useDisplayState();
   const requestsCol = useCollection<LeaveRequest>("leaveRequests");
   const balancesCol = useCollection<LeaveBalance>("balances");
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const myBalances = balancesCol.items.filter((b) => b.employeeId === CURRENT_EMPLOYEE_ID);
   const myRequests = state === "state.empty"
     ? []
     : requestsCol.items.filter((r) => r.employeeId === CURRENT_EMPLOYEE_ID);
+
+  const cancelingRequest = cancelingId ? requestsCol.get(cancelingId) : undefined;
+
+  const handleRowPress = (rowId: string) => {
+    const id = rowId.replace("row.my-request.", "");
+    const request = requestsCol.get(id);
+    if (request && request.status === "pending") {
+      setCancelingId(id);
+    }
+  };
+
+  const confirmCancel = () => {
+    if (cancelingId) {
+      requestsCol.remove(cancelingId);
+    }
+    setCancelingId(null);
+  };
 
   return (
     <Screen nav={nav}>
@@ -114,14 +133,37 @@ function MyLeave() {
       />
       <Table
         id="table.my-requests"
-        columns={["Dates", "Type", "Reason", "Status"]}
+        columns={["Dates", "Type", "Reason", "Status", "Action"]}
         rows={myRequests.map((r) => ({
           id: `row.my-request.${r.id}`,
-          cells: [`${r.startDate} - ${r.endDate}`, r.type, r.reason, r.status],
+          cells: [`${r.startDate} - ${r.endDate}`, r.type, r.reason, r.status, r.status === "pending" ? "Cancel" : ""],
           tone: toneForStatus(r.status),
         }))}
+        onRowPress={handleRowPress}
         empty={<EmptyState id="empty.my-requests" title="No leave requests yet" text="Your submitted requests appear here." />}
       />
+      <Dialog
+        id="dialog.cancel-request"
+        title="Cancel this request?"
+        open={Boolean(cancelingRequest)}
+        onClose={() => setCancelingId(null)}
+        actions={
+          <Stack direction="row">
+            <Button id="btn.cancel-request.keep" label="Keep it" onPress={() => setCancelingId(null)} />
+            <Button id="btn.cancel-request.confirm" label="Cancel request" emphasis="danger" onPress={confirmCancel} />
+          </Stack>
+        }
+      >
+        {cancelingRequest && (
+          <Detail
+            id="detail.cancel-request"
+            fields={[
+              { label: "Type", value: cancelingRequest.type },
+              { label: "Dates", value: `${cancelingRequest.startDate} - ${cancelingRequest.endDate}` },
+            ]}
+          />
+        )}
+      </Dialog>
     </Screen>
   );
 }
