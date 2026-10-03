@@ -19,7 +19,10 @@
     { "id": "screen.request-detail", "name": "Request Detail", "roleIds": ["Manager"] },
     { "id": "screen.team-history", "name": "Team History", "roleIds": ["Manager"] },
     { "id": "screen.team-balances", "name": "Team Balances", "roleIds": ["Manager"] },
-    { "id": "screen.adjust-balance", "name": "Adjust Balance", "roleIds": ["Manager"] }
+    { "id": "screen.adjust-balance", "name": "Adjust Balance", "roleIds": ["Manager"] },
+    { "id": "screen.account", "name": "Account", "roleIds": ["Employee", "Manager"] },
+    { "id": "screen.settings", "name": "Settings", "roleIds": ["Employee", "Manager"] },
+    { "id": "screen.signed-out", "name": "Signed out", "roleIds": ["Employee", "Manager"] }
   ],
   "flows": [
     {
