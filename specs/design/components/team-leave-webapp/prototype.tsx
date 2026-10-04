@@ -10,8 +10,10 @@ import {
   Form,
   Heading,
   Screen,
+  Section,
   Stack,
   Stat,
+  StatGroup,
   Table,
   ValidationSummary,
   defineApp,
@@ -119,14 +121,6 @@ function MyLeave() {
 
   const cancelingRequest = cancelingId ? requestsCol.get(cancelingId) : undefined;
 
-  const handleRowPress = (rowId: string) => {
-    const id = rowId.replace("row.my-request.", "");
-    const request = requestsCol.get(id);
-    if (request && request.status === "pending") {
-      setCancelingId(id);
-    }
-  };
-
   const confirmCancel = () => {
     if (cancelingId) {
       requestsCol.remove(cancelingId);
@@ -140,28 +134,32 @@ function MyLeave() {
       {state === "state.failed" && (
         <Alert id="alert.my-leave-failed" tone="error" title="Could not load your leave data" text="Try again in a few minutes." />
       )}
-      <Stack direction="row">
+      <StatGroup>
         {myBalances.map((b) => (
-          <Stat key={b.id} id={`stat.balance.${b.id}`} label={b.type} value={`${b.balance} days`} />
+          <Stat key={b.id} id={`stat.balance.${b.id}`} label={b.type} value={`${b.balance} days`} hint="days remaining" icon="Calendar" />
         ))}
-      </Stack>
-      <Heading
-        id="heading.my-requests"
-        text="My Requests"
-        level="section"
+      </StatGroup>
+      <Section
+        id="section.my-requests"
+        title="My Requests"
+        count={myRequests.length}
+        subtitle="Newest first. Cancel a request while it is still pending."
         actions={<Button id="btn.new-request" label="New Request" emphasis="primary" to="screen.new-request" />}
-      />
-      <Table
-        id="table.my-requests"
-        columns={["Dates", "Type", "Reason", "Action", "Status"]}
-        rows={myRequests.map((r) => ({
-          id: `row.my-request.${r.id}`,
-          cells: [`${r.startDate} - ${r.endDate}`, r.type, r.reason, r.status === "pending" ? "Cancel" : "", r.status],
-          tone: toneForStatus(r.status),
-        }))}
-        onRowPress={handleRowPress}
-        empty={<EmptyState id="empty.my-requests" title="No leave requests yet" text="Your submitted requests appear here." />}
-      />
+      >
+        <Table
+          id="table.my-requests"
+          columns={["Dates", "Type", "Reason", { label: "Status", kind: "status" }]}
+          rows={myRequests.map((r) => ({
+            id: `row.my-request.${r.id}`,
+            cells: [`${r.startDate} - ${r.endDate}`, r.type, r.reason],
+            status: { text: r.status, tone: toneForStatus(r.status) },
+            actions: r.status === "pending"
+              ? [{ id: `row.my-request.${r.id}.cancel`, label: "Cancel", emphasis: "danger" as const, onPress: () => setCancelingId(r.id) }]
+              : [],
+          }))}
+          empty={<EmptyState id="empty.my-requests" title="No leave requests yet" text="Your submitted requests appear here." />}
+        />
+      </Section>
       <Dialog
         id="dialog.cancel-request"
         title="Cancel this request?"
@@ -262,17 +260,24 @@ function TeamQueue() {
       {state === "state.failed" && (
         <Alert id="alert.team-queue-failed" tone="error" title="Could not load the team's requests" text="Try again in a few minutes." />
       )}
-      <Table
-        id="table.team-queue"
-        columns={["Employee", "Dates", "Type", "Reason"]}
-        rows={pending.map((r) => ({
-          id: `row.team-queue.${r.id}`,
-          cells: [r.employeeName, `${r.startDate} - ${r.endDate}`, r.type, r.reason],
-          to: "screen.request-detail",
-          params: { requestId: r.id },
-        }))}
-        empty={<EmptyState id="empty.team-queue" title="Nothing pending" text="New requests from your team appear here." />}
-      />
+      <Section
+        id="section.team-queue"
+        title="Requests"
+        count={pending.length}
+        subtitle="Oldest first. Open a request to decide it."
+      >
+        <Table
+          id="table.team-queue"
+          columns={["Employee", "Dates", "Type", "Reason"]}
+          rows={pending.map((r) => ({
+            id: `row.team-queue.${r.id}`,
+            cells: [r.employeeName, `${r.startDate} - ${r.endDate}`, r.type, r.reason],
+            to: "screen.request-detail",
+            params: { requestId: r.id },
+          }))}
+          empty={<EmptyState id="empty.team-queue" title="Nothing pending" text="New requests from your team appear here." />}
+        />
+      </Section>
     </Shell>
   );
 }
@@ -335,16 +340,23 @@ function TeamHistory() {
   return (
     <Shell>
       <Heading id="heading.team-history" text="Team History" />
-      <Table
-        id="table.team-history"
-        columns={["Employee", "Dates", "Type", "Comment", "Status"]}
-        rows={decided.map((r) => ({
-          id: `row.team-history.${r.id}`,
-          cells: [r.employeeName, `${r.startDate} - ${r.endDate}`, r.type, r.comment ?? "", r.status],
-          tone: toneForStatus(r.status),
-        }))}
-        empty={<EmptyState id="empty.team-history" title="No decided requests yet" text="Approved and rejected requests appear here." />}
-      />
+      <Section
+        id="section.team-history"
+        title="Decided Requests"
+        count={decided.length}
+        subtitle="Approvals and rejections from your team."
+      >
+        <Table
+          id="table.team-history"
+          columns={["Employee", "Dates", "Type", "Comment", { label: "Status", kind: "status" }]}
+          rows={decided.map((r) => ({
+            id: `row.team-history.${r.id}`,
+            cells: [r.employeeName, `${r.startDate} - ${r.endDate}`, r.type, r.comment ?? ""],
+            status: { text: r.status, tone: toneForStatus(r.status) },
+          }))}
+          empty={<EmptyState id="empty.team-history" title="No decided requests yet" text="Approved and rejected requests appear here." />}
+        />
+      </Section>
     </Shell>
   );
 }
@@ -364,17 +376,24 @@ function TeamBalances() {
   return (
     <Shell>
       <Heading id="heading.team-balances" text="Team Balances" />
-      <Table
-        id="table.team-balances"
-        columns={["Employee", "Vacation", "Sick", "Personal"]}
-        rows={rows.map((r) => ({
-          id: `row.team-balances.${r.employeeId}`,
-          cells: [r.name, String(r.vacation), String(r.sick), String(r.personal)],
-          to: "screen.adjust-balance",
-          params: { employeeId: r.employeeId },
-        }))}
-        empty={<EmptyState id="empty.team-balances" title="No team members yet" text="Team balances appear here." />}
-      />
+      <Section
+        id="section.team-balances"
+        title="Balances"
+        count={rows.length}
+        subtitle="Open a team member to adjust one leave type."
+      >
+        <Table
+          id="table.team-balances"
+          columns={["Employee", { label: "Vacation", kind: "number" }, { label: "Sick", kind: "number" }, { label: "Personal", kind: "number" }]}
+          rows={rows.map((r) => ({
+            id: `row.team-balances.${r.employeeId}`,
+            cells: [r.name, String(r.vacation), String(r.sick), String(r.personal)],
+            to: "screen.adjust-balance",
+            params: { employeeId: r.employeeId },
+          }))}
+          empty={<EmptyState id="empty.team-balances" title="No team members yet" text="Team balances appear here." />}
+        />
+      </Section>
     </Shell>
   );
 }
